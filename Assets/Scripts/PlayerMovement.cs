@@ -7,32 +7,31 @@ public class PlayerMovement : MonoBehaviour
     private Animator animator;
     private Rigidbody2D rb;
     private float horizontalDirection;
-    private bool isJumping = false;
+    private bool isGrounded;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        isGrounded = true;
     }
 
     private void FixedUpdate()
     {
         Run();
-        if(isJumping)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, 6.5f);
-            isJumping = false;
-        }
     }
 
     private void Update()
     {
         horizontalDirection = Input.GetAxisRaw("Horizontal");
 
-        if(Input.GetButtonDown("Jump"))
+        if(Input.GetButtonDown("Jump") && isGrounded)
         {
-            isJumping = true;
+            Jump();
         }
+
+        animator.SetBool("isGrounded", isGrounded);
+        animator.SetFloat("yVelocity", rb.velocity.y);
 
         if( horizontalDirection == 1)
         {
@@ -48,5 +47,19 @@ public class PlayerMovement : MonoBehaviour
     {
         rb.velocity = new Vector2(horizontalDirection * speed * Time.fixedDeltaTime, rb.velocity.y);
         animator.SetBool("Run", horizontalDirection != 0);
+    }
+
+    private void Jump()
+    {
+        rb.velocity = new Vector2(rb.velocity.x, 6.5f);
+        isGrounded = false;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.tag == "Ground")
+        {
+            isGrounded = true;
+        }
     }
 }
